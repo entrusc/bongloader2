@@ -1,0 +1,277 @@
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>de.darkblue</groupId>
+    <artifactId>bongloader2</artifactId>
+    <version>2.2</version>
+    <packaging>jar</packaging>
+
+    <name>bongloader2</name>
+    
+    <properties>
+        <project.build.mainClass>de.darkblue.bongloader2.Application</project.build.mainClass>
+        <project.build.mainPackage>de.darkblue.bongloader2</project.build.mainPackage>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <buildNumber>${env.GIT_COMMIT}</buildNumber>
+        <distDirectory></distDirectory>
+        
+        <netbeans.hint.license>gpl-3.0</netbeans.hint.license>        
+    </properties>
+  
+  
+    <profiles>
+        <!-- if no GIT hash is supplied from jenkins we add "0" -->
+        <profile>
+            <activation>
+                <property>
+                    <name>!env.GIT_COMMIT</name>
+                </property>
+            </activation>
+            <properties>
+                <buildNumber>0</buildNumber>
+            </properties>
+        </profile>
+    </profiles>
+        
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.1</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <archive>
+                        <addMavenDescriptor>false</addMavenDescriptor>
+                        <manifest>
+                            <mainClass>${project.build.mainClass}</mainClass>
+                            <packageName>de.darkblue.bongloader2</packageName>
+                            <addClasspath>true</addClasspath>
+                            <addExtensions/>
+                            <classpathLayoutType>custom</classpathLayoutType>
+                            <customClasspathLayout>$${artifact.artifactId}.$${artifact.extension}</customClasspathLayout>
+                            <classpathPrefix>lib</classpathPrefix>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <Implementation-Build>${buildNumber}</Implementation-Build>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                            <stripVersion>true</stripVersion>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <!-- build win executable -->
+            <plugin>
+                <groupId>com.akathist.maven.plugins.launch4j</groupId>
+                <artifactId>launch4j-maven-plugin</artifactId>
+                <version>1.7.8</version>
+                <executions>
+                    <execution>
+                        <id>launch4j</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>launch4j</goal>
+                        </goals>
+                        <configuration>
+                            <dontWrapJar>false</dontWrapJar>
+                            <headerType>gui</headerType>
+                            <chdir>.</chdir>
+                            <outfile>${project.build.directory}/${project.artifactId}.exe</outfile>
+                            <jar>${project.build.directory}/${project.build.finalName}.jar</jar>
+                            <errTitle>Bongloader2</errTitle>
+                            <customProcName>Bongloader2</customProcName>
+                            <jre>
+                                <minVersion>1.5.0</minVersion>
+                            </jre>                            
+                            <classPath>
+                                <mainClass>${project.build.mainClass}</mainClass>
+                                <addDependencies>true</addDependencies>
+                                <preCp>anything</preCp>
+                            </classPath>
+                            <singleInstance>
+                                <mutexName>Bongloader2</mutexName>
+                                <windowTitle>Bongloader2</windowTitle>
+                            </singleInstance>
+                            <versionInfo>
+                                <fileVersion>${project.version}.0.${buildNumber}</fileVersion>
+                                <txtFileVersion>${project.version}.0.${buildNumber}</txtFileVersion>
+                                <fileDescription>Bongloader2</fileDescription>
+                                <copyright>2011-2016 by Florian Frankenberger</copyright>
+                                <productVersion>${project.version}.0.${buildNumber}</productVersion>
+                                <txtProductVersion>${project.version}.0.${buildNumber}</txtProductVersion>
+                                <productName>Bongloader2</productName>
+                                <internalName>Bongloader2</internalName>
+                                <originalFilename>${project.artifactId}.exe</originalFilename>
+                            </versionInfo>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>            
+
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2.2</version>
+                <executions>
+                    <execution>
+                        <id>assemble-generic</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>${project.artifactId}-${project.version}.${buildNumber}</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <recompressZippedFiles>true</recompressZippedFiles>
+                            <descriptors>
+                                <descriptor>src/main/assembly/bin-generic.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>                    
+                    <execution>
+                        <id>assemble-win</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>${project.artifactId}-${project.version}.${buildNumber}-win</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <recompressZippedFiles>true</recompressZippedFiles>
+                            <descriptors>
+                                <descriptor>src/main/assembly/bin-win.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>                    
+                </executions>                
+            </plugin> 
+        </plugins>
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>**/*.properties</exclude>
+                </excludes>
+                <filtering>false</filtering>
+            </resource>            
+        </resources>
+
+    </build>    
+    
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-changelog-plugin</artifactId>
+                <version>2.2</version>
+            </plugin>
+        </plugins>
+    </reporting>       
+
+    <dependencies>
+        
+        <dependency>
+            <groupId>com.moebiusgames</groupId>
+            <artifactId>xdata</artifactId>
+            <version>1.4</version>
+        </dependency>     
+        
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.5.0</version>
+        </dependency>      
+        
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>17.0</version>
+        </dependency>    
+        
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.3.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.imgscalr</groupId>
+            <artifactId>imgscalr-lib</artifactId>
+            <version>4.2</version>
+        </dependency>       
+        
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>9.2.6.v20141205</version>
+        </dependency>   
+        
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.13</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>1.7.13</version>
+        </dependency>
+        
+        <!-- dependencies for downward compatability -->
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream</artifactId>
+            <version>1.4.2</version>
+        </dependency>
+        
+        <!-- test dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+        
+    </dependencies>
+</project>
