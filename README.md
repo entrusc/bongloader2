@@ -1,3 +1,5 @@
+**Note: this repository has been archived as bong.tv no longer exists.**
+
 Bongloader2
 ===========
 Bongloader2 is a java software written to automatically download recordings
